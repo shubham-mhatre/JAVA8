@@ -112,8 +112,43 @@ public class StreamApiDemo {
 		method22();
 		System.out.println("\n");
 		
+		//Q23 : return list of with elements have only letters
+		method23();
+		System.out.println("\n");
+		
+		//Q24 : remove duplicates and sort them in descending order
+		method24();
+		System.out.println("\n");
+		
 		//preDefinedFunctionalInterface();
 
+	}
+
+	private static void method24() {
+		System.out.println("Q24 : remove duplicates and sort them in descending order");
+		
+		List<Integer>list = List.of(5,3,1,3,2,5,4);
+		System.out.println("Input : "+list);
+		
+		List<Integer>output = list.stream().distinct()
+				.sorted(Comparator.reverseOrder()).toList();
+		
+		System.out.println("output :" +output);
+		
+	}
+
+	private static void method23() {
+		System.out.println("Q23 : return list of with elements have only letters");
+		
+		String[] str = {"13623","hasjajs","sdfh1232","shjdf%^$"};
+		System.out.println("input "+Arrays.toString(str));
+		
+		List<String> strList = Arrays.stream(str)
+				.filter(s->s.chars().allMatch(Character::isLetter))
+				.toList();
+		
+		System.out.println("output "+strList);
+		
 	}
 
 	private static void method22() {
