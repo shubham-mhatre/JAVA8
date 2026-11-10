@@ -9,7 +9,6 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -219,9 +218,18 @@ public class StreamApiDemo {
 	private static void method40(List<Employee> empList) {
 		System.out.println("Q40 : find employee who is working in more than 1 department");
 
-		Map<String, List<Employee>> map = empList.stream().collect(Collectors.groupingBy(Employee::getName));
+//		Map<String, List<Employee>> map = empList.stream().collect(Collectors.groupingBy(Employee::getName));
+//
+//		List<String> output = map.entrySet().stream().filter(e -> e.getValue().size() > 1).map(Map.Entry::getKey)
+//				.toList();
+		
+		Map<String, Set<String>> deptsByName = empList.stream()
+				.collect(Collectors.groupingBy(Employee::getName,
+						Collectors.mapping(Employee::getDepartment, Collectors.toSet())));
 
-		List<String> output = map.entrySet().stream().filter(e -> e.getValue().size() > 1).map(Map.Entry::getKey)
+		List<String> output = deptsByName.entrySet().stream()
+				.filter(e -> e.getValue().size() > 1)
+				.map(Map.Entry::getKey)
 				.toList();
 
 		System.out.println(output);
@@ -236,7 +244,7 @@ public class StreamApiDemo {
 			if (e.getSalary() < 30000) {
 				return "LOW";
 			}
-			if (e.getSalary() > 30000 && e.getSalary() > 45000) {
+			if (e.getSalary() <= 45000) {
 				return "MEDIUM";
 			} else {
 				return "HIGH";
@@ -322,10 +330,13 @@ public class StreamApiDemo {
 
 		String s = "java is great. java is object oriented and java streams are powerful, and java is fun";
 		String[] strArr = s.toLowerCase().replaceAll("[^a-z\\s]", "").split(" ");
-
+		
 		List<Map.Entry<String, Long>> map = Arrays.stream(strArr)
-				.collect(Collectors.groupingBy(Function.identity(), Collectors.counting())).entrySet().stream()
-				.sorted(Map.Entry.<String, Long>comparingByValue().reversed()).distinct().limit(3).toList();
+				.collect(Collectors.groupingBy(Function.identity(), Collectors.counting()))
+				.entrySet().stream()
+				.sorted(Map.Entry.<String, Long>comparingByValue().reversed())
+				.limit(3)
+				.toList();
 
 		System.out.println(map);
 
@@ -362,7 +373,7 @@ public class StreamApiDemo {
 		List<List<Integer>> list = Arrays.asList(List.of(1, 2, 3, 4), List.of(3, 4, 5, 6), List.of(7, 8, 1, 2),
 				List.of(7, 11, 12, 8));
 
-		List<Integer> output = list.stream().flatMap(innerList -> innerList.stream().distinct()).toList();
+		List<Integer> output = list.stream().flatMap(List::stream).distinct().toList();
 		System.out.println("output :" + output);
 
 	}
@@ -377,7 +388,7 @@ public class StreamApiDemo {
 		System.out.println("output :" + output);
 
 		// Optimize solution use Set
-		Set<Integer> set1 = new HashSet(list1);
+		Set<Integer> set1 = new HashSet<>(list1);
 		List<Integer> output2 = list2.stream().filter(s -> set1.contains(s)).toList();
 		System.out.println("optimize using set output2 :" + output2);
 
@@ -468,10 +479,10 @@ public class StreamApiDemo {
 	private static void method21(List<Employee> empList) {
 		System.out.println("Q21: find second highest salary");
 
-		Double sencondHightestSalary = empList.stream().map(Employee::getSalary).sorted(Comparator.reverseOrder())
+		Double secondHightestSalary = empList.stream().map(Employee::getSalary).sorted(Comparator.reverseOrder())
 				.skip(1).findFirst().get();
 
-		System.out.println("sencondHightestSalary : " + sencondHightestSalary);
+		System.out.println("sencondHightestSalary : " + secondHightestSalary);
 		System.out.println("\n");
 
 		System.out.println("Q21.1: find second highest salary employee details");
@@ -485,14 +496,17 @@ public class StreamApiDemo {
 	private static void method20() {
 		System.out.println("Q20: find first non repeat element");
 		String str = "thhe greatest of all time is Leo Messi";
-		String firstNonRepeat = Arrays.asList(str.split("")).stream()
+		
+		String cleaned = str.replaceAll("\\s", "").toLowerCase();
+		
+		String firstNonRepeat = Arrays.asList(cleaned.split("")).stream()
 				.collect(Collectors.groupingBy(Function.identity(), LinkedHashMap::new, Collectors.counting()))
 				.entrySet().stream().filter(s -> s.getValue() == 1).findFirst().get().getKey();
 		System.out.println("firstNonRepeat : " + firstNonRepeat);
 		System.out.println("\n");
 
 		System.out.println("Q20.1: find first repeat element");
-		String firstRepeat = Arrays.asList(str.split("")).stream()
+		String firstRepeat = Arrays.asList(cleaned.split("")).stream()
 				.collect(Collectors.groupingBy(Function.identity(), LinkedHashMap::new, Collectors.counting()))
 				.entrySet().stream().filter(s -> s.getValue() > 1).findFirst().get().getKey();
 		System.out.println("firstRepeat : " + firstRepeat);
@@ -540,14 +554,17 @@ public class StreamApiDemo {
 	// Q16: find employee who is having max employee name length
 	private static void method16(List<Employee> empList) {
 		System.out.println("Q16: find employee who is having max employee name length");
-		String name = empList.stream().map(Employee::getName)
-				.collect(Collectors.maxBy(Comparator.comparing(s -> s.length()))).orElse(null);
-		System.out.println("max by employee name length : " + name);
+		
+		Employee emp = empList.stream()
+				.collect(Collectors.maxBy(Comparator.comparingInt(e -> e.getName().length())))
+				.orElse(null);
+		System.out.println("max by employee name length : " + emp);
 		System.out.println("\n");
 
-		String name1 = empList.stream().map(Employee::getName)
-				.reduce((emp1, emp2) -> emp1.length() > emp2.length() ? emp1 : emp2).get();
-		System.out.println("max by employee name length using reduce method :  " + name1);
+		Employee emp1 = empList.stream()
+				.reduce((emp1a, emp2a) -> emp1a.getName().length() >= emp2a.getName().length() ? emp1a : emp2a)
+				.orElse(null);
+		System.out.println("max by employee name length using reduce method :  " + emp1);
 
 	}
 
@@ -577,7 +594,7 @@ public class StreamApiDemo {
 						.forEach(emp -> System.out.println("empName : " + emp.getName() + "emp age : " + emp.getAge()));
 				System.out.println("");
 			} else {
-				System.out.println("younger than 25 years");
+				System.out.println("25 years or younger than 25 years");
 				data.getValue().stream()
 						.forEach(emp -> System.out.println("empName : " + emp.getName() + "emp age : " + emp.getAge()));
 				System.out.println("");
@@ -628,10 +645,10 @@ public class StreamApiDemo {
 	// Q10: how many male & female emp in IT team?
 	private static void method10(List<Employee> empList) {
 		System.out.println("Q10: how many male & female emp in IT team?");
-		Map<String, Long> iTAndHrGenderWiseHeadCount = empList.stream()
+		Map<String, Long> itAndHrGenderWiseHeadCount = empList.stream()
 				.filter(s -> "IT".equalsIgnoreCase(s.getDepartment()))
 				.collect(Collectors.groupingBy(Employee::getGender, Collectors.counting()));
-		System.out.println("iTAndHrGenderWiseHeadCount " + iTAndHrGenderWiseHeadCount);
+		System.out.println("itAndHrGenderWiseHeadCount " + itAndHrGenderWiseHeadCount);
 
 	}
 

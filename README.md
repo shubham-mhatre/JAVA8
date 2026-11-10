@@ -116,20 +116,6 @@ Each question prints its title followed by its output.
 - **Ordering:** using `LinkedHashMap` to preserve insertion order when grouping
 - **Functional interfaces:** `Predicate`, `Function`, `Consumer`, `Supplier`
 
-## Known Issues and Suggested Improvements
-
-A few solutions behave differently than their question implies:
-
-1. **Q39 (salary categories):** the condition `salary > 30000 && salary > 45000` is redundant, so salaries between 30000 and 45000 fall into `HIGH`. Likely intended: `LOW` < 30000, `MEDIUM` 30000 to 45000, `HIGH` > 45000.
-2. **Q40 (employee in more than 1 department):** groups by **name**, so it actually finds duplicate names (same as Q19), not employees in multiple departments. The sample data has no employee ID repeated across departments.
-3. **Q30 (flatten and deduplicate):** `distinct()` is applied inside each inner list, so duplicates across lists remain. Use `list.stream().flatMap(List::stream).distinct().toList()`.
-4. **Q33 (top 3 words):** the `distinct()` call after `sorted()` has no effect; it can be removed.
-5. **Q16:** returns the longest **name** rather than the full `Employee` object.
-6. **Q20:** operates on a string with spaces, so a space character can be reported as the first repeating character.
-7. **Q14:** the output label says "younger than 25" but the partition includes age = 25.
-8. **Q29:** `new HashSet(list1)` uses a raw type; use `new HashSet<>(list1)`.
-9. **Cosmetic:** variable names such as `sencondHightestSalary` and `iTAndHrGenderWiseHeadCount` contain typos or are misleading. `method10` only handles IT.
-
 ## Possible Extensions
 
 - Split `Employee` into its own file and move each question into a separate class or test
