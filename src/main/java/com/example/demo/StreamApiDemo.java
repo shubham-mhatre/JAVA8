@@ -199,19 +199,18 @@ public class StreamApiDemo {
 	private static void method41() {
 		System.out.println("Q41 : find bigraph frequencies in paragraph. (bigraph means : pairs of consecutive words)");
 		String s = "Java is great, java is fun and java is powerful!";
-		System.out.println("input "+s);
-		
+		System.out.println("input " + s);
+
 		String[] words = s.toLowerCase().replaceAll("[^a-z\\s]", "").split(" ");
-		
-		List<String> list=
-		IntStream.range(0, words.length -1).mapToObj(i -> words[i]+" "+words[i+1]).toList();
-		
-		Map<String,Long> output=
-		list.stream().collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
-		
+
+		List<String> list = IntStream.range(0, words.length - 1).mapToObj(i -> words[i] + " " + words[i + 1]).toList();
+
+		Map<String, Long> output = list.stream()
+				.collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
+
 		System.out.println(Arrays.toString(words));
 		System.out.println(list);
-		System.out.println("output "+output);
+		System.out.println("output " + output);
 
 	}
 
@@ -222,15 +221,12 @@ public class StreamApiDemo {
 //
 //		List<String> output = map.entrySet().stream().filter(e -> e.getValue().size() > 1).map(Map.Entry::getKey)
 //				.toList();
-		
-		Map<String, Set<String>> deptsByName = empList.stream()
-				.collect(Collectors.groupingBy(Employee::getName,
-						Collectors.mapping(Employee::getDepartment, Collectors.toSet())));
 
-		List<String> output = deptsByName.entrySet().stream()
-				.filter(e -> e.getValue().size() > 1)
-				.map(Map.Entry::getKey)
-				.toList();
+		Map<String, Set<String>> deptsByName = empList.stream().collect(Collectors.groupingBy(Employee::getName,
+				Collectors.mapping(Employee::getDepartment, Collectors.toSet())));
+
+		List<String> output = deptsByName.entrySet().stream().filter(e -> e.getValue().size() > 1)
+				.map(Map.Entry::getKey).toList();
 
 		System.out.println(output);
 
@@ -330,13 +326,10 @@ public class StreamApiDemo {
 
 		String s = "java is great. java is object oriented and java streams are powerful, and java is fun";
 		String[] strArr = s.toLowerCase().replaceAll("[^a-z\\s]", "").split(" ");
-		
+
 		List<Map.Entry<String, Long>> map = Arrays.stream(strArr)
-				.collect(Collectors.groupingBy(Function.identity(), Collectors.counting()))
-				.entrySet().stream()
-				.sorted(Map.Entry.<String, Long>comparingByValue().reversed())
-				.limit(3)
-				.toList();
+				.collect(Collectors.groupingBy(Function.identity(), Collectors.counting())).entrySet().stream()
+				.sorted(Map.Entry.<String, Long>comparingByValue().reversed()).limit(3).toList();
 
 		System.out.println(map);
 
@@ -496,9 +489,9 @@ public class StreamApiDemo {
 	private static void method20() {
 		System.out.println("Q20: find first non repeat element");
 		String str = "thhe greatest of all time is Leo Messi";
-		
+
 		String cleaned = str.replaceAll("\\s", "").toLowerCase();
-		
+
 		String firstNonRepeat = Arrays.asList(cleaned.split("")).stream()
 				.collect(Collectors.groupingBy(Function.identity(), LinkedHashMap::new, Collectors.counting()))
 				.entrySet().stream().filter(s -> s.getValue() == 1).findFirst().get().getKey();
@@ -554,9 +547,8 @@ public class StreamApiDemo {
 	// Q16: find employee who is having max employee name length
 	private static void method16(List<Employee> empList) {
 		System.out.println("Q16: find employee who is having max employee name length");
-		
-		Employee emp = empList.stream()
-				.collect(Collectors.maxBy(Comparator.comparingInt(e -> e.getName().length())))
+
+		Employee emp = empList.stream().collect(Collectors.maxBy(Comparator.comparingInt(e -> e.getName().length())))
 				.orElse(null);
 		System.out.println("max by employee name length : " + emp);
 		System.out.println("\n");
@@ -572,11 +564,18 @@ public class StreamApiDemo {
 	// belongs to?
 	private static void method15(List<Employee> empList) {
 		System.out.println("Q15: oldest employee in organization? what his age and what department he belongs to?");
+		System.out.println("Q15: using .collect(Collectors.maxBy())");
 		Employee oldestByAge = empList.stream().collect(Collectors.maxBy(Comparator.comparingInt(Employee::getAge)))
 				.orElse(null);
 		System.out.println("oldest emp name : " + oldestByAge.getName() + " department " + oldestByAge.getDepartment());
 
+		System.out.println("Q15: using .max(Comparator.comparing())");
 		Employee oldestByAge1 = empList.stream().max(Comparator.comparing(Employee::getAge)).orElse(null);
+		System.out.println("oldest emp name : " + oldestByAge1.getName() + " department " + oldestByAge1.getDepartment());
+		
+		System.out.println("Q15: using .sorted(Comparator.comparing().reversed()).findFirst()");
+		Employee oldestByAge2 =empList.stream().sorted(Comparator.comparing(Employee::getAge).reversed()).findFirst().get();
+		System.out.println("oldest emp name : " + oldestByAge2.getName() + " department " + oldestByAge2.getDepartment());
 
 	}
 
@@ -600,6 +599,13 @@ public class StreamApiDemo {
 				System.out.println("");
 			}
 		});
+		
+		System.out.println("instead of true and false display younger than 25 and older than 25");
+		Map<String,List<String>> groupingByAge=
+		empList.stream().collect(Collectors.groupingBy(
+				s->s.getAge() > 25 ?  "Older than the" : "younger than 25"
+				,Collectors.mapping(Employee::getName, Collectors.toList())));
+		System.out.println(groupingByAge);
 
 	}
 
@@ -618,6 +624,7 @@ public class StreamApiDemo {
 	private static void method12(List<Employee> empList) {
 		System.out.println("//Q12: get all employee name departmentwise ?");
 
+		System.out.println("//Q12: approach 1 : using grouping by then iterating on entrySet and displaying");
 		Map<String, List<Employee>> empByDepartment = empList.stream()
 				.collect(Collectors.groupingBy(Employee::getDepartment));
 
@@ -629,6 +636,11 @@ public class StreamApiDemo {
 					.forEach(empDeparmentwise -> System.out.println("employee name : " + empDeparmentwise.getName()));
 			System.out.println("");
 		});
+
+		System.out.println("//Q12: approach 2 : using grouping by and then mapping");
+		Map<String,List<String>> res=empList.stream().collect(Collectors.groupingBy(Employee::getDepartment,
+				Collectors.mapping(Employee::getName, Collectors.toList())));
+		System.out.println("using grouping by & mapping :"+res);
 
 	}
 
